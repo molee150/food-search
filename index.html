@@ -3,617 +3,223 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>环球美食查询 · 一键找到你想要的菜</title>
-<style>
-  :root{
-    --bg:#faf6f1;
-    --bg2:#f3ece2;
-    --ink:#2b2320;
-    --ink-soft:#7a6f66;
-    --accent:#e8562a;
-    --accent2:#f59e0b;
-    --card:#ffffff;
-    --line:#eadfd3;
-    --shadow:0 10px 30px rgba(90,60,30,.08);
-    --radius:18px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{
-    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;
-    background:
-      radial-gradient(1200px 600px at 85% -10%, #ffe8d6 0%, transparent 60%),
-      radial-gradient(900px 500px at -10% 10%, #fde8e8 0%, transparent 55%),
-      var(--bg);
-    color:var(--ink);
-    line-height:1.6;
-    min-height:100vh;
-  }
-  .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
-
-  /* ---------- header ---------- */
-  header{
-    position:sticky;top:0;z-index:50;
-    backdrop-filter:blur(12px);
-    background:rgba(255,255,255,.78);
-    border-bottom:1px solid var(--line);
-  }
-  .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .logo{font-size:20px;font-weight:800;letter-spacing:.5px;display:flex;align-items:center;gap:9px}
-  .logo .dot{
-    width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:19px;
-    background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 4px 12px rgba(232,86,42,.35);
-  }
-  .nav .count{font-size:13px;color:var(--ink-soft)}
-
-  /* ---------- hero ---------- */
-  .hero{text-align:center;padding:52px 0 28px}
-  .hero h1{
-    font-size:clamp(28px,5vw,46px);font-weight:900;letter-spacing:1px;
-    background:linear-gradient(90deg,#e8562a,#f59e0b,#e8562a);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-  }
-  .hero p{margin-top:12px;color:var(--ink-soft);font-size:16px}
-
-  /* ---------- search ---------- */
-  .searchbar{display:flex;gap:10px;max-width:640px;margin:0 auto}
-  .searchbar .box{
-    flex:1;display:flex;align-items:center;gap:10px;
-    background:#fff;border:1.5px solid var(--line);border-radius:999px;
-    padding:0 18px;height:54px;box-shadow:var(--shadow);transition:.2s;
-  }
-  .searchbar .box:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px rgba(232,86,42,.12)}
-  .searchbar .box svg{flex:none;opacity:.5}
-  .searchbar input{flex:1;border:none;outline:none;font-size:16px;background:transparent;color:var(--ink)}
-  .searchbar .clear{display:none;border:none;background:#eee;color:#777;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;line-height:1}
-  .btn{
-    border:none;cursor:pointer;font-family:inherit;font-weight:700;border-radius:999px;
-    transition:.18s;white-space:nowrap;
-  }
-  .btn-primary{background:linear-gradient(135deg,var(--accent),#f0622f);color:#fff;padding:0 24px;font-size:15px;box-shadow:0 8px 20px rgba(232,86,42,.35)}
-  .btn-primary:hover{transform:translateY(-1px)}
-  .btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink);padding:0 18px;font-size:15px}
-  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
-
-  /* ---------- filters ---------- */
-  .filters{margin-top:26px;display:flex;flex-direction:column;gap:16px}
-  .fgroup{display:flex;align-items:flex-start;gap:12px}
-  .fgroup .label{
-    flex:none;font-size:14px;font-weight:800;color:var(--ink-soft);
-    padding-top:7px;width:44px;text-align:right;
-  }
-  .chips{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{
-    border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);
-    padding:6px 14px;border-radius:999px;font-size:14px;cursor:pointer;transition:.15s;
-    display:flex;align-items:center;gap:6px;user-select:none;
-  }
-  .chip:hover{border-color:var(--accent);color:var(--accent)}
-  .chip.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;font-weight:700;box-shadow:0 4px 12px rgba(232,86,42,.3)}
-  .chip .flag{font-size:16px}
-
-  .resultbar{display:flex;align-items:center;justify-content:space-between;margin:26px 0 14px}
-  .resultbar .info{font-size:14px;color:var(--ink-soft)}
-  .resultbar .info b{color:var(--accent)}
-  .btn-reset{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:13px;text-decoration:underline}
-  .btn-reset:hover{color:var(--accent)}
-
-  /* ---------- grid ---------- */
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:18px;padding-bottom:60px}
-  .card{
-    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-    overflow:hidden;cursor:pointer;box-shadow:0 4px 14px rgba(90,60,30,.05);
-    transition:transform .2s, box-shadow .2s;display:flex;flex-direction:column;
-  }
-  .card:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
-  .card .thumb{
-    height:150px;display:grid;place-items:center;font-size:64px;position:relative;
-    background:linear-gradient(135deg,#fff6ec,#ffe9d6);
-  }
-  .card .thumb .country{
-    position:absolute;top:12px;left:12px;background:rgba(255,255,255,.9);color:#6b5b4e;
-    font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.08);
-  }
-  .card .body{padding:16px;display:flex;flex-direction:column;gap:9px;flex:1}
-  .card .name{font-size:18px;font-weight:800}
-  .card .nameEn{font-size:12px;color:var(--ink-soft);margin-top:-6px}
-  .card .meta{display:flex;gap:8px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap}
-  .card .meta span{background:var(--bg2);padding:2px 9px;border-radius:6px}
-  .card .tags{display:flex;gap:6px;flex-wrap:wrap}
-  .taste{font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px}
-  .card .desc{font-size:13px;color:var(--ink-soft);flex:1}
-  .card .more{font-size:13px;color:var(--accent);font-weight:700;margin-top:auto}
-
-  /* ---------- empty ---------- */
-  .empty{display:none;text-align:center;padding:70px 20px;color:var(--ink-soft)}
-  .empty .emoji{font-size:60px;margin-bottom:14px}
-  .empty h3{font-size:20px;color:var(--ink);margin-bottom:6px}
-
-  /* ---------- modal ---------- */
-  .overlay{
-    position:fixed;inset:0;background:rgba(40,25,15,.5);backdrop-filter:blur(4px);
-    display:none;align-items:flex-start;justify-content:center;z-index:100;padding:40px 16px;overflow-y:auto;
-  }
-  .overlay.show{display:flex}
-  .modal{
-    background:#fff;border-radius:22px;max-width:640px;width:100%;overflow:hidden;
-    box-shadow:0 30px 80px rgba(0,0,0,.3);animation:pop .25s ease;
-  }
-  @keyframes pop{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
-  .modal .m-thumb{height:200px;display:grid;place-items:center;font-size:90px;position:relative;background:linear-gradient(135deg,#fff6ec,#ffe9d6)}
-  .modal .close{
-    position:absolute;top:16px;right:16px;width:38px;height:38px;border-radius:50%;border:none;
-    background:rgba(255,255,255,.9);font-size:20px;cursor:pointer;color:#555;box-shadow:0 4px 12px rgba(0,0,0,.12);
-  }
-  .modal .m-body{padding:26px}
-  .modal h2{font-size:26px;font-weight:900}
-  .modal .m-sub{color:var(--ink-soft);font-size:14px;margin-top:2px}
-  .modal .m-tags{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
-  .modal .m-desc{color:#5c4f45;font-size:15px;margin-bottom:20px}
-  .modal .m-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
-  .modal .m-meta span{background:var(--bg2);padding:6px 14px;border-radius:8px;font-size:14px;font-weight:700}
-  .modal h4{font-size:16px;font-weight:800;margin:18px 0 10px;display:flex;align-items:center;gap:8px}
-  .modal h4::before{content:"";width:5px;height:18px;border-radius:3px;background:linear-gradient(var(--accent),var(--accent2))}
-  .modal ul.ing{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .modal ul.ing li{background:#faf5ee;padding:8px 12px;border-radius:8px;font-size:14px}
-  .modal ol.steps{counter-reset:s;list-style:none;display:flex;flex-direction:column;gap:10px}
-  .modal ol.steps li{position:relative;padding-left:42px;font-size:14.5px}
-  .modal ol.steps li::before{
-    counter-increment:s;content:counter(s);position:absolute;left:0;top:2px;
-    width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));
-    color:#fff;font-weight:800;display:grid;place-items:center;font-size:13px;
-  }
-  .modal .m-tip{background:#fff8e6;border-left:4px solid var(--accent2);padding:12px 16px;border-radius:10px;font-size:14px;margin-top:18px;color:#7a5b1e}
-  @media(max-width:560px){.modal ul.ing{grid-template-columns:1fr}}
-
-  footer{text-align:center;padding:30px 20px;color:var(--ink-soft);font-size:13px;border-top:1px solid var(--line)}
-</style>
+<title>环球美食 · 查询 · 分享 · 讨论</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <div class="wrap nav">
-    <div class="logo"><span class="dot">🍜</span>环球美食查询</div>
-    <div class="count" id="totalCount"></div>
+
+<!-- ============ 封面 ============ -->
+<div id="view-cover" class="view cover active">
+  <div class="cover-bg"></div>
+  <div class="cover-inner">
+    <div class="cover-emoji">🍜 🍕 🍣 🥘</div>
+    <h1>环球<span>美食</span></h1>
+    <p class="cover-sub">查美食 · 看做法 · 晒照片 · 学视频 · 一起聊</p>
+    <button class="btn btn-big" onclick="enterSite()">进入网站 →</button>
+    <div class="cover-hint">内置 115+ 道全球美食，支持按国家 / 地区 / 口味筛选</div>
   </div>
-</header>
-
-<main class="wrap">
-  <section class="hero">
-    <h1>今天想吃点什么？</h1>
-    <p>按国家、口味（酸甜苦辣）快速找到全球美食，附详细做法菜谱</p>
-  </section>
-
-  <section class="searchbar">
-    <div class="box">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <input id="search" type="text" placeholder="搜索菜名、食材、国家… 如「豆腐」「泰国」「鸡蛋」">
-      <button class="clear" id="clearBtn" title="清空">×</button>
-    </div>
-    <button class="btn btn-ghost" id="randomBtn" title="随机推荐一道">🎲 随机</button>
-  </section>
-
-  <section class="filters">
-    <div class="fgroup">
-      <div class="label">国家</div>
-      <div class="chips" id="countryChips"></div>
-    </div>
-    <div class="fgroup">
-      <div class="label">口味</div>
-      <div class="chips" id="tasteChips"></div>
-    </div>
-    <div class="fgroup">
-      <div class="label">类型</div>
-      <div class="chips" id="catChips"></div>
-    </div>
-  </section>
-
-  <div class="resultbar">
-    <div class="info" id="resultInfo"></div>
-    <button class="btn-reset" id="resetBtn">清空全部筛选</button>
-  </div>
-
-  <section class="grid" id="grid"></section>
-  <div class="empty" id="empty">
-    <div class="emoji">🔍</div>
-    <h3>没有找到匹配的美食</h3>
-    <p>换个关键词，或点击上方「清空全部筛选」试试</p>
-  </div>
-</main>
-
-<div class="overlay" id="overlay">
-  <div class="modal" id="modal"></div>
 </div>
 
-<footer>环球美食查询 · 数据仅供家常参考，口味与做法可随个人喜好调整</footer>
-
-<script>
-const DISHES = [
-  // ============ 中国 ============
-  {name:"麻婆豆腐",nameEn:"Mapo Tofu",country:"中国",emoji:"🌶️",tastes:["辣","咸","鲜"],category:"主菜",difficulty:"简单",time:"20分钟",
-   desc:"川菜经典，豆腐嫩滑、麻辣鲜香，一勺浇在米饭上最下饭。",
-   ing:["嫩豆腐 1 盒","猪肉末 80g","郫县豆瓣酱 2 勺","花椒粉 1 小勺","蒜末、姜末 适量","葱花 适量"],
-   steps:["豆腐切小块，入淡盐水焯 1 分钟捞出备用。","热油下肉末炒散至变色，加豆瓣酱、蒜末姜末炒出红油。","加小半碗水烧开，轻轻放入豆腐，小火煮 3 分钟。","淋入水淀粉勾芡至汤汁浓稠，撒花椒粉与葱花即可。"],
-   tip:"豆腐用盐水焯过不易碎；喜欢更麻可出锅后额外撒一层花椒粉。"},
-  {name:"糖醋里脊",nameEn:"Sweet & Sour Pork",country:"中国",emoji:"🍖",tastes:["酸","甜"],category:"主菜",difficulty:"中等",time:"30分钟",
-   desc:"外酥里嫩、酸甜开胃，孩子最爱的一道经典家常菜。",
-   ing:["猪里脊 300g","鸡蛋 1 个","淀粉、面粉 各 2 勺","番茄酱 3 勺","白醋 2 勺","白糖 2 勺"],
-   steps:["里脊切条，加盐、料酒、蛋液抓匀，裹上淀粉面粉混合粉。","油温六成热下锅，中小火炸至金黄捞出，再复炸一次更酥脆。","锅留底油，下番茄酱、白醋、白糖和少许水炒成浓稠糖醋汁。","倒入炸好的里脊快速翻匀，撒白芝麻出锅。"],
-   tip:"糖醋汁按「1 糖 : 1 醋 : 1.5 番茄酱」大致比例调，酸甜更平衡。"},
-  {name:"宫保鸡丁",nameEn:"Kung Pao Chicken",country:"中国",emoji:"🍗",tastes:["辣","咸"],category:"主菜",difficulty:"简单",time:"25分钟",
-   desc:"鸡丁滑嫩、花生香脆，咸鲜微辣带一丝回甜。",
-   ing:["鸡腿肉 300g","炸花生米 60g","干辣椒 8 个","花椒 1 小勺","葱段 适量","生抽、醋、糖 适量"],
-   steps:["鸡腿肉切丁，加料酒、生抽、淀粉抓匀腌 10 分钟。","调汁：生抽、醋、糖、少许淀粉和水拌匀备用。","热油下干辣椒和花椒爆香，下鸡丁大火滑炒至变色。","倒入料汁翻炒收浓，加葱段和花生米翻匀出锅。"],
-   tip:"花生米最后放，保持香脆不回软。"},
-  {name:"红烧肉",nameEn:"Braised Pork Belly",country:"中国",emoji:"🥘",tastes:["咸","甜"],category:"主菜",difficulty:"中等",time:"90分钟",
-   desc:"肥而不腻、入口即化，酱香浓郁的红烧肉是团圆饭的常客。",
-   ing:["五花肉 500g","冰糖 30g","生抽 3 勺","老抽 1 勺","料酒 2 勺","姜片、八角、桂皮 适量"],
-   steps:["五花肉切块，冷水下锅加料酒焯水，捞出沥干。","锅放少量油下冰糖，小火炒出焦糖色。","下肉块翻炒上色，加姜片、八角、桂皮、生抽、老抽。","加热水没过肉，小火炖 60 分钟，大火收汁至浓稠。"],
-   tip:"炒糖色用小火，颜色变琥珀色即可下肉，避免发苦。"},
-  {name:"苦瓜炒蛋",nameEn:"Bitter Melon with Egg",country:"中国",emoji:"🥒",tastes:["苦","咸"],category:"主菜",difficulty:"简单",time:"15分钟",
-   desc:"苦瓜清爽解腻、鸡蛋滑嫩，微苦回甘，清热又下饭。",
-   ing:["苦瓜 1 根","鸡蛋 3 个","蒜末 适量","盐、糖 适量"],
-   steps:["苦瓜对半剖开去瓤，切薄片，加盐腌 10 分钟挤去苦水。","鸡蛋打散，热油炒至凝固盛出。","另起锅爆香蒜末，下苦瓜大火翻炒 2 分钟。","倒入鸡蛋，加盐和少许糖翻匀即可。"],
-   tip:"去瓤后把白色内膜刮干净，苦味会轻很多。"},
-  {name:"酸辣汤",nameEn:"Hot & Sour Soup",country:"中国",emoji:"🥣",tastes:["酸","辣"],category:"汤羹",difficulty:"简单",time:"20分钟",
-   desc:"酸辣开胃、料足暖身，一碗下肚整个人都通透了。",
-   ing:["嫩豆腐 半盒","木耳、香菇 适量","鸡蛋 1 个","白胡椒粉 1 勺","陈醋 2 勺","水淀粉 适量"],
-   steps:["豆腐、木耳、香菇切丝，鸡蛋打散。","锅中加水烧开，下豆腐丝、木耳、香菇煮 3 分钟。","加盐、白胡椒粉、生抽调味，淋入陈醋。","倒入水淀粉勾芡，再淋入蛋液搅成蛋花，撒香菜出锅。"],
-   tip:"白胡椒粉要足量，是酸辣汤「辣」的灵魂。"},
-  {name:"小笼包",nameEn:"Soup Dumplings",country:"中国",emoji:"🥟",tastes:["咸","鲜"],category:"小吃",difficulty:"难",time:"120分钟",
-   desc:"皮薄馅大、汤汁满满，轻轻一咬鲜美的肉汁就流出来。",
-   ing:["面粉 300g","猪皮冻 150g","猪肉末 300g","姜末、葱花 适量","生抽、香油 适量"],
-   steps:["面粉加温水揉成光滑面团，醒发 30 分钟。","肉末加姜末、生抽、香油、盐和切碎的皮冻拌匀成馅。","面团擀成中间厚边缘薄的皮，包入馅料收口。","上蒸锅大火蒸 8 分钟，蘸姜丝醋吃。"],
-   tip:"皮冻是汤汁的来源，提前熬好冷藏凝结后切碎拌馅。"},
-  {name:"蛋炒饭",nameEn:"Egg Fried Rice",country:"中国",emoji:"🍚",tastes:["咸","鲜"],category:"主食",difficulty:"简单",time:"10分钟",
-   desc:"粒粒分明、蛋香四溢，隔夜饭的黄金归宿。",
-   ing:["隔夜米饭 2 碗","鸡蛋 2 个","葱花 适量","火腿丁 适量","盐、生抽 适量"],
-   steps:["鸡蛋打散，热油下锅快速炒成碎蛋盛出。","锅里补点油，下米饭大火炒散、炒到粒粒分明。","加火腿丁、炒蛋，淋少许生抽和盐翻炒。","最后撒大量葱花，翻匀出锅。"],
-   tip:"米饭提前拨散再下锅，全程大火，才能粒粒分明。"},
-  // ============ 日本 ============
-  {name:"寿司",nameEn:"Sushi",country:"日本",emoji:"🍣",tastes:["鲜"],category:"主食",difficulty:"中等",time:"40分钟",
-   desc:"醋饭清甜、鱼生鲜美，一口一个的经典日式料理。",
-   ing:["寿司米 2 杯","寿司醋 3 勺","三文鱼、金枪鱼 适量","海苔 2 张","芥末、酱油 适量"],
-   steps:["米煮熟趁热拌入寿司醋，用扇子扇凉成醋饭。","鱼肉切片备用。","手上沾水，取适量醋饭握成椭圆饭团。","抹少许芥末，盖上鱼片捏合，配酱油食用。"],
-   tip:"握寿司手要保持湿润，米饭才不会粘手。"},
-  {name:"天妇罗",nameEn:"Tempura",country:"日本",emoji:"🍤",tastes:["咸","鲜"],category:"小吃",difficulty:"中等",time:"30分钟",
-   desc:"面衣轻薄酥脆，蔬菜与鲜虾的鲜甜被完美锁住。",
-   ing:["大虾 8 只","茄子、南瓜 适量","低筋面粉 100g","冰水 150ml","鸡蛋 1 个","日式酱油、萝卜泥 适量"],
-   steps:["虾去壳留尾、开背去虾线，蔬菜切片。","面粉、冰水、蛋黄快速搅成稀面糊（不要过度搅拌）。","食材蘸薄薄一层面糊，入 170℃ 油锅炸至金黄。","捞出沥油，配酱油和萝卜泥吃。"],
-   tip:"面糊要用冰水且现调现用，保持低温才会酥脆。"},
-  {name:"味噌汤",nameEn:"Miso Soup",country:"日本",emoji:"🍲",tastes:["咸","鲜"],category:"汤羹",difficulty:"简单",time:"10分钟",
-   desc:"日式家常的灵魂，一碗热乎乎的味噌汤暖胃又安心。",
-   ing:["味噌 2 勺","嫩豆腐 半盒","裙带菜 适量","柴鱼高汤 500ml","葱花 适量"],
-   steps:["豆腐切小丁，裙带菜泡发。","柴鱼高汤烧开，下豆腐和裙带菜煮 2 分钟。","关小火，用漏勺把味噌化入汤中搅匀。","撒葱花即可，切忌大火久煮。"],
-   tip:"味噌要在关火前加入，久煮会发酸失去风味。"},
-  {name:"日式咖喱饭",nameEn:"Japanese Curry Rice",country:"日本",emoji:"🍛",tastes:["咸","甜"],category:"主食",difficulty:"简单",time:"45分钟",
-   desc:"浓稠香甜、温和不辣，大人小孩都爱的国民料理。",
-   ing:["咖喱块 100g","鸡腿肉 300g","土豆、胡萝卜、洋葱 各 1 个","米饭 适量"],
-   steps:["鸡肉、土豆、胡萝卜、洋葱切块。","热油炒香洋葱，下鸡肉炒至变色，再加土豆胡萝卜。","加没过食材的水，煮 20 分钟至蔬菜软烂。","关火放入咖喱块搅化，再小火煮 5 分钟至浓稠，浇在米饭上。"],
-   tip:"咖喱块关火后再放，搅匀了再开小火，不容易糊底。"},
-  {name:"抹茶拿铁",nameEn:"Matcha Latte",country:"日本",emoji:"🍵",tastes:["苦","甜"],category:"饮品",difficulty:"简单",time:"5分钟",
-   desc:"抹茶微苦与牛奶香甜交织，颜色治愈的日式饮品。",
-   ing:["抹茶粉 1 勺","热牛奶 250ml","热水 30ml","糖浆 适量"],
-   steps:["抹茶粉过筛入杯，加 30ml 热水用茶筅打至起泡。","牛奶加热至 65℃ 左右。","杯中加糖浆，倒入抹茶液，再缓缓冲入牛奶。","轻轻搅拌出分层纹理即可。"],
-   tip:"抹茶粉过筛能避免结块，打出的茶汤更细腻。"},
-  // ============ 韩国 ============
-  {name:"韩式泡菜",nameEn:"Kimchi",country:"韩国",emoji:"🥬",tastes:["酸","辣"],category:"小吃",difficulty:"中等",time:"120分钟",
-   desc:"酸辣爽脆、发酵风味十足，韩国餐桌的灵魂配菜。",
-   ing:["大白菜 1 颗","粗盐 适量","辣椒粉 5 勺","鱼露 2 勺","蒜末、姜末、梨泥 适量","糯米糊 2 勺"],
-   steps:["白菜切块，均匀抹粗盐腌 2 小时，洗净挤干。","糯米粉加水熬成糊，放凉后拌入辣椒粉、鱼露、蒜姜、梨泥做成酱。","把酱均匀涂抹在每片白菜上。","装入密封盒室温发酵 1 天，再冷藏 2 天后风味更佳。"],
-   tip:"发酵时间越长越酸，按自己口味控制室温放置时长。"},
-  {name:"石锅拌饭",nameEn:"Bibimbap",country:"韩国",emoji:"🍲",tastes:["辣","咸"],category:"主食",difficulty:"简单",time:"30分钟",
-   desc:"五色蔬菜铺满、辣酱一拌香气扑鼻，锅底还有脆脆的锅巴。",
-   ing:["米饭 1 碗","菠菜、豆芽、胡萝卜、香菇 各 1 把","牛肉末 80g","鸡蛋 1 个","韩式辣酱 2 勺"],
-   steps:["各种蔬菜分别焯水或炒熟，加少许盐调味。","牛肉末用酱油炒熟。","石锅抹香油，铺入米饭，摆上蔬菜、牛肉。","中火加热至底部形成锅巴，打上生蛋、拌入辣酱开吃。"],
-   tip:"石锅先抹香油再铺饭，锅巴会更香脆。"},
-  {name:"韩式炸鸡",nameEn:"Korean Fried Chicken",country:"韩国",emoji:"🍗",tastes:["甜","辣"],category:"主菜",difficulty:"中等",time:"50分钟",
-   desc:"外皮酥脆、酱汁甜辣，配啤酒的经典宵夜。",
-   ing:["鸡翅 500g","玉米淀粉 适量","韩式辣酱 3 勺","番茄酱 2 勺","糖、蒜末 适量"],
-   steps:["鸡翅用牛奶腌 30 分钟去腥，裹上玉米淀粉。","入油锅 170℃ 炸 8 分钟捞出，复炸 2 分钟更酥。","锅中下韩式辣酱、番茄酱、糖、蒜末和少许水熬成酱。","倒入鸡翅快速裹匀酱汁，撒白芝麻。"],
-   tip:"复炸是外皮酥脆的关键，油温要够高。"},
-  // ============ 泰国 ============
-  {name:"冬阴功汤",nameEn:"Tom Yum Goong",country:"泰国",emoji:"🍤",tastes:["酸","辣"],category:"汤羹",difficulty:"中等",time:"35分钟",
-   desc:"酸辣鲜香、层次丰富，泰式风味的招牌代表。",
-   ing:["鲜虾 200g","香茅 2 根","南姜、柠檬叶 适量","冬阴功酱 2 勺","椰浆 100ml","青柠汁 2 勺"],
-   steps:["虾去壳留头，香茅拍扁切段。","锅中加水，放虾头、香茅、南姜、柠檬叶煮出香味。","下冬阴功酱搅匀，放虾肉煮至变色。","加椰浆、青柠汁和鱼露调味，撒香菜出锅。"],
-   tip:"青柠汁关火后再加，酸味更清新不苦涩。"},
-  {name:"泰式炒河粉",nameEn:"Pad Thai",country:"泰国",emoji:"🍜",tastes:["酸","甜","辣"],category:"主食",difficulty:"中等",time:"25分钟",
-   desc:"酸、甜、辣、咸四味平衡，街头小吃的代表。",
-   ing:["河粉 200g","鲜虾、鸡蛋 适量","豆芽、韭菜 适量","鱼露、罗望子酱、糖 适量","花生碎、青柠 适量"],
-   steps:["河粉温水泡软，虾去壳。","热油炒鸡蛋和虾，下河粉大火翻炒。","加鱼露、罗望子酱、糖调味。","加豆芽韭菜翻匀，撒花生碎、挤青柠汁。"],
-   tip:"河粉提前泡软沥干，大火快炒才不粘连。"},
-  {name:"芒果糯米饭",nameEn:"Mango Sticky Rice",country:"泰国",emoji:"🥭",tastes:["甜"],category:"甜品",difficulty:"简单",time:"40分钟",
-   desc:"芒果清甜、糯米软糯椰香浓郁，甜品界的网红。",
-   ing:["糯米 200g","椰浆 250ml","白糖 40g","盐 少许","熟芒果 1 个"],
-   steps:["糯米浸泡 4 小时后蒸熟。","椰浆加糖和少许盐小火煮化，倒一半拌入热糯米焖 15 分钟。","芒果去皮切块摆盘。","糯米饭盛出，淋剩余椰浆，配芒果吃。"],
-   tip:"糯米饭要趁热拌椰浆，才吸得饱、更香糯。"},
-  // ============ 越南 ============
-  {name:"越南河粉",nameEn:"Pho",country:"越南",emoji:"🍜",tastes:["鲜"],category:"汤羹",difficulty:"中等",time:"120分钟",
-   desc:"清亮鲜美的牛骨汤底，配上爽滑河粉和香草。",
-   ing:["牛骨 1kg","河粉 200g","牛肉片 150g","洋葱、姜 适量","九层塔、青柠、豆芽 适量"],
-   steps:["牛骨焯水，加洋葱、姜和大量清水熬煮 2 小时成高汤。","高汤滤净，加鱼露、盐调味。","河粉烫熟入碗，铺上生牛肉片。","浇入滚烫高汤把肉烫熟，配九层塔、豆芽和青柠。"],
-   tip:"高汤要撇净浮沫，汤色才清亮。"},
-  {name:"越南春卷",nameEn:"Fresh Spring Rolls",country:"越南",emoji:"🥗",tastes:["鲜"],category:"小吃",difficulty:"简单",time:"25分钟",
-   desc:"米纸包裹鲜虾蔬菜，清爽低卡，蘸鱼露汁吃。",
-   ing:["越南米纸 8 张","鲜虾 8 只","生菜、胡萝卜、黄瓜 适量","米粉 适量","鱼露蘸汁 适量"],
-   steps:["虾煮熟去壳对半切开，蔬菜切丝，米粉烫熟。","米纸在温水中快速浸软，平铺。","放生菜、米粉、蔬菜丝和虾，卷紧成春卷。","蘸鱼露、青柠、糖调成的蘸汁食用。"],
-   tip:"米纸只需快速过温水，泡太久会破。"},
-  // ============ 印度 ============
-  {name:"印度咖喱鸡",nameEn:"Chicken Curry",country:"印度",emoji:"🍛",tastes:["辣","咸"],category:"主菜",difficulty:"中等",time:"50分钟",
-   desc:"香料浓郁、层次丰富，配米饭或馕都超满足。",
-   ing:["鸡腿肉 400g","洋葱 1 个","番茄 2 个","咖喱粉、姜黄粉、孜然 适量","酸奶、奶油 适量"],
-   steps:["鸡肉用酸奶和香料腌 20 分钟。","热油炒香洋葱至金黄，加姜蒜和香料炒香。","加番茄炒成酱，下鸡肉翻炒。","加水和奶油炖 25 分钟至鸡肉软烂、汤汁浓稠。"],
-   tip:"香料先干锅烘一下再下油，香味会更浓。"},
-  {name:"印度飞饼",nameEn:"Roti / Paratha",country:"印度",emoji:"🫓",tastes:["咸"],category:"主食",difficulty:"中等",time:"40分钟",
-   desc:"外脆内软、层次分明，撕开蘸咖喱吃。",
-   ing:["面粉 250g","温水 150ml","盐、油 适量"],
-   steps:["面粉加盐和温水揉成软面团，醒 30 分钟。","分成小剂子，擀薄后抹油卷起再擀成饼。","平底锅刷油，中小火烙至两面金黄起层。","趁热用手拍松，层次更分明。"],
-   tip:"面团要够软，烙的时候火候适中才会起层。"},
-  {name:"印度拉茶",nameEn:"Masala Chai",country:"印度",emoji:"🫖",tastes:["甜"],category:"饮品",difficulty:"简单",time:"15分钟",
-   desc:"香料与红茶碰撞，奶香浓郁、温暖治愈。",
-   ing:["红茶 2 勺","牛奶 250ml","水 150ml","姜片、肉桂、豆蔻 适量","糖 适量"],
-   steps:["锅中加水、姜片、肉桂、豆蔻煮开。","加入红茶煮 3 分钟出味。","倒入牛奶和糖，小火煮至微沸。","滤掉茶渣，趁热饮用。"],
-   tip:"香料可随喜好增减，姜和豆蔻是灵魂。"},
-  // ============ 土耳其 ============
-  {name:"土耳其烤肉",nameEn:"Doner Kebab",country:"土耳其",emoji:"🥙",tastes:["咸"],category:"主食",difficulty:"中等",time:"60分钟",
-   desc:"旋转烤制的肉片卷入薄饼，肉香浓郁。",
-   ing:["羊肉或牛肉 500g","酸奶 2 勺","孜然、辣椒粉、蒜 适量","薄饼、生菜、番茄 适量"],
-   steps:["肉切薄片，用酸奶、蒜、孜然、辣椒粉腌 30 分钟。","平底锅大火煎至焦香。","薄饼加热，铺生菜、番茄片。","卷入肉片，淋酸奶酱即可。"],
-   tip:"肉片要薄，大火快煎锁住肉汁。"},
-  {name:"土耳其软糖",nameEn:"Turkish Delight",country:"土耳其",emoji:"🍬",tastes:["甜"],category:"甜品",difficulty:"中等",time:"90分钟",
-   desc:"软糯弹牙、玫瑰香气，撒满糖粉的传统甜点。",
-   ing:["玉米淀粉 60g","白糖 400g","玫瑰水 1 勺","柠檬汁 少许","糖粉 适量"],
-   steps:["淀粉加水调成糊，糖加水熬成浓糖浆。","糖浆倒入淀粉糊，小火不停搅拌至透明浓稠。","加玫瑰水和柠檬汁搅匀，倒入抹油模具。","冷却 4 小时后切块，裹上糖粉。"],
-   tip:"全程小火并不断搅拌，避免糊底结块。"},
-  // ============ 意大利 ============
-  {name:"玛格丽特披萨",nameEn:"Margherita Pizza",country:"意大利",emoji:"🍕",tastes:["咸","鲜"],category:"主食",difficulty:"中等",time:"90分钟",
-   desc:"番茄、马苏里拉、罗勒三色经典，简单却美味。",
-   ing:["高筋面粉 250g","酵母 3g","番茄酱 适量","马苏里拉芝士 150g","罗勒叶 适量"],
-   steps:["面粉加酵母、盐、温水揉成面团，发酵至两倍大。","擀成圆饼，抹上番茄酱。","撒满马苏里拉芝士。","230℃ 烤箱烤 12 分钟，出炉放罗勒叶。"],
-   tip:"烤箱要预热到最高温，披萨底才脆。"},
-  {name:"意大利肉酱面",nameEn:"Spaghetti Bolognese",country:"意大利",emoji:"🍝",tastes:["咸","鲜"],category:"主食",difficulty:"简单",time:"50分钟",
-   desc:"番茄肉酱浓郁，裹满每一根意面的经典美味。",
-   ing:["意大利面 200g","牛肉末 200g","番茄 2 个","洋葱、蒜 适量","番茄酱、红酒 适量"],
-   steps:["意面加盐煮 8 分钟捞出。","热油炒香洋葱蒜末，下牛肉末炒散。","加番茄丁和番茄酱、少许红酒，炖 25 分钟成肉酱。","肉酱拌入意面，撒帕玛森芝士。"],
-   tip:"煮面水要加盐，面条才有底味。"},
-  {name:"提拉米苏",nameEn:"Tiramisu",country:"意大利",emoji:"🍰",tastes:["甜"],category:"甜品",difficulty:"简单",time:"30分钟",
-   desc:"咖啡酒香与马斯卡彭的丝滑，入口即化。",
-   ing:["马斯卡彭奶酪 250g","手指饼干 1 包","浓缩咖啡 100ml","鸡蛋 2 个","糖 50g","可可粉 适量"],
-   steps:["蛋黄加糖打发至发白，拌入马斯卡彭。","蛋白打至硬性发泡，翻拌进奶酪糊。","手指饼干快速蘸咖啡液，铺入容器。","一层饼干一层奶酪糊，冷藏 4 小时，筛可可粉。"],
-   tip:"饼干蘸咖啡要快，泡太湿会软塌。"},
-  // ============ 法国 ============
-  {name:"可颂",nameEn:"Croissant",country:"法国",emoji:"🥐",tastes:["甜"],category:"甜品",difficulty:"难",time:"180分钟",
-   desc:"层层酥脆、黄油香气扑鼻的法式经典面包。",
-   ing:["高筋面粉 250g","黄油 150g","酵母 4g","糖、盐、牛奶 适量"],
-   steps:["面团揉好冷藏，黄油敲成片。","面团包入黄油，反复折叠擀开 3 次，每次冷藏 30 分钟。","擀成面片，切成三角形卷起。","发酵后刷蛋液，200℃ 烤 18 分钟。"],
-   tip:"开酥过程中保持面团低温，层次才分明。"},
-  {name:"马卡龙",nameEn:"Macaron",country:"法国",emoji:"🍥",tastes:["甜"],category:"甜品",difficulty:"难",time:"120分钟",
-   desc:"外壳酥脆、内馅绵软，色彩缤纷的法式甜点。",
-   ing:["杏仁粉 100g","糖粉 100g","蛋白 2 个","细砂糖 80g","馅料（奶油/果酱） 适量"],
-   steps:["杏仁粉和糖粉过筛，蛋白加糖打至硬性发泡。","拌入粉类，翻拌至缎带状。","挤成圆形，静置至表面结皮。","150℃ 烤 15 分钟，出炉夹馅冷藏。"],
-   tip:"蛋白霜要打发到位，翻拌不能过度。"},
-  {name:"法式洋葱汤",nameEn:"French Onion Soup",country:"法国",emoji:"🧅",tastes:["咸","鲜"],category:"汤羹",difficulty:"中等",time:"60分钟",
-   desc:"焦糖化洋葱的甜香，配上融化的芝士面包。",
-   ing:["洋葱 4 个","黄油 30g","牛肉高汤 800ml","法棍 2 片","格鲁耶尔芝士 适量"],
-   steps:["洋葱切丝，用黄油小火炒 30 分钟至焦糖色。","倒入牛肉高汤煮 20 分钟，加盐和黑胡椒。","盛入汤碗，放法棍片。","撒满芝士，入烤箱烤至融化焦黄。"],
-   tip:"洋葱一定要小火慢炒到深棕色，汤才够甜。"},
-  // ============ 西班牙 ============
-  {name:"西班牙海鲜饭",nameEn:"Paella",country:"西班牙",emoji:"🥘",tastes:["咸","鲜"],category:"主食",difficulty:"中等",time:"50分钟",
-   desc:"藏红花染成金黄，海鲜与米饭的丰盛一锅。",
-   ing:["大米 200g","虾、青口、鱿鱼 适量","藏红花 1 小撮","番茄、洋葱、蒜 适量","高汤 400ml"],
-   steps:["热油炒香洋葱蒜末，下番茄炒成酱。","加入大米和藏红花翻炒。","倒入高汤，铺上海鲜。","盖盖小火焖 20 分钟，出锅前挤柠檬汁。"],
-   tip:"焖饭过程不要翻动，才能形成焦香的锅底。"},
-  {name:"西班牙油条",nameEn:"Churros",country:"西班牙",emoji:"🥖",tastes:["甜"],category:"甜品",difficulty:"简单",time:"30分钟",
-   desc:"外脆内软，蘸热巧克力吃的地道西班牙味。",
-   ing:["面粉 150g","水 250ml","黄油 30g","鸡蛋 2 个","糖、肉桂粉 适量"],
-   steps:["水加黄油、盐煮沸，倒入面粉快速搅成团。","分次加入鸡蛋搅匀成面糊。","面糊装入裱花袋，挤成长条入油锅炸至金黄。","捞出裹上糖和肉桂粉。"],
-   tip:"油温 180℃ 左右，炸到表面金黄即可。"},
-  // ============ 希腊 ============
-  {name:"希腊沙拉",nameEn:"Greek Salad",country:"希腊",emoji:"🥗",tastes:["酸","咸"],category:"沙拉",difficulty:"简单",time:"10分钟",
-   desc:"番茄、黄瓜、橄榄配菲达奶酪，清爽健康。",
-   ing:["番茄、黄瓜 各 1 个","青椒、红洋葱 适量","黑橄榄、菲达奶酪 适量","橄榄油、红酒醋、牛至 适量"],
-   steps:["番茄、黄瓜、青椒、洋葱切块。","加入黑橄榄，放上整块菲达奶酪。","淋橄榄油和红酒醋，撒牛至叶。","轻轻拌匀即可。"],
-   tip:"用整块菲达奶酪，口感比碎粒更地道。"},
-  {name:"希腊酸奶",nameEn:"Greek Yogurt",country:"希腊",emoji:"🥣",tastes:["酸"],category:"甜品",difficulty:"简单",time:"5分钟",
-   desc:"浓稠醇厚、高蛋白，配蜂蜜和坚果最经典。",
-   ing:["希腊酸奶 200g","蜂蜜 2 勺","坚果碎 适量","水果 适量"],
-   steps:["希腊酸奶盛入碗中。","淋上蜂蜜。","撒坚果碎和喜欢的水果。","直接享用或冷藏后吃。"],
-   tip:"选原味无糖希腊酸奶，配蜂蜜甜度刚好。"},
-  // ============ 德国 ============
-  {name:"德国猪肘",nameEn:"Schweinshaxe",country:"德国",emoji:"🍖",tastes:["咸"],category:"主菜",difficulty:"难",time:"150分钟",
-   desc:"外皮酥脆、肉质软烂，配酸菜解腻。",
-   ing:["猪肘 1 只","啤酒 500ml","洋葱、胡萝卜、芹菜 适量","孜然、盐、黑胡椒 适量"],
-   steps:["猪肘表皮划刀，抹盐和孜然腌 1 小时。","和蔬菜、啤酒一起入烤箱 160℃ 烤 2 小时。","转 220℃ 再烤 20 分钟使表皮酥脆。","切块配德国酸菜吃。"],
-   tip:"最后高温烤皮是关键，皮才会脆。"},
-  {name:"黑森林蛋糕",nameEn:"Black Forest Cake",country:"德国",emoji:"🍒",tastes:["甜"],category:"甜品",difficulty:"难",time:"120分钟",
-   desc:"巧克力海绵、奶油与樱桃酒香的经典组合。",
-   ing:["巧克力海绵蛋糕 2 层","鲜奶油 300ml","樱桃 适量","樱桃酒 2 勺","黑巧克力屑 适量"],
-   steps:["蛋糕片刷上樱桃酒糖水。","鲜奶油加糖打发。","夹层铺奶油和樱桃，抹面。","表面挤奶油花，撒巧克力屑，放樱桃装饰。"],
-   tip:"樱桃酒是黑森林的灵魂，别省略。"},
-  // ============ 俄罗斯 ============
-  {name:"罗宋汤",nameEn:"Borscht",country:"俄罗斯",emoji:"🍅",tastes:["酸","甜"],category:"汤羹",difficulty:"中等",time:"60分钟",
-   desc:"甜菜根染红、酸甜浓郁，配面包超满足。",
-   ing:["牛肉 300g","甜菜根、胡萝卜、洋葱、土豆 各 1 个","卷心菜 适量","番茄酱 3 勺","酸奶油 适量"],
-   steps:["牛肉切块煮成汤底，撇去浮沫。","甜菜根、胡萝卜、洋葱切丝炒软，加番茄酱炒香。","倒入牛肉汤，加土豆和卷心菜煮 20 分钟。","加盐和糖调味，盛碗配一勺酸奶油。"],
-   tip:"酸奶油是点睛之笔，让口感更醇厚。"},
-  // ============ 墨西哥 ============
-  {name:"墨西哥塔可",nameEn:"Taco",country:"墨西哥",emoji:"🌮",tastes:["辣","咸"],category:"主食",difficulty:"简单",time:"25分钟",
-   desc:"玉米饼包裹香辣牛肉，挤上青柠和辣酱。",
-   ing:["玉米饼 6 张","牛肉末 250g","洋葱、香菜 适量","孜然、辣椒粉、蒜 适量","青柠、辣酱 适量"],
-   steps:["牛肉末加孜然、辣椒粉、蒜炒熟。","玉米饼小火加热。","饼上铺牛肉末、洋葱丁和香菜。","挤青柠汁，淋辣酱卷起吃。"],
-   tip:"玉米饼干锅加热一下更软更香。"},
-  {name:"牛油果酱",nameEn:"Guacamole",country:"墨西哥",emoji:"🥑",tastes:["咸","鲜"],category:"小吃",difficulty:"简单",time:"10分钟",
-   desc:"牛油果绵密、青柠清爽，配玉米片绝配。",
-   ing:["牛油果 2 个","青柠 1 个","番茄、洋葱、香菜 适量","盐、辣椒 适量"],
-   steps:["牛油果压成泥。","加入切碎的番茄、洋葱、香菜。","挤青柠汁，加盐和辣椒碎。","拌匀即可，配玉米片吃。"],
-   tip:"青柠汁能防止牛油果氧化变黑。"},
-  // ============ 美国 ============
-  {name:"美式汉堡",nameEn:"Hamburger",country:"美国",emoji:"🍔",tastes:["咸"],category:"主食",difficulty:"简单",time:"25分钟",
-   desc:"厚实多汁的牛肉饼，夹上芝士蔬菜超满足。",
-   ing:["牛肉末 200g","汉堡胚 2 个","芝士片、生菜、番茄、洋葱 适量","盐、黑胡椒 适量"],
-   steps:["牛肉末加盐黑胡椒团成肉饼，压扁。","平底锅大火煎肉饼，两面各 3 分钟至焦香。","关火放芝士片用余温融化。","汉堡胚烤热，依次夹生菜、肉饼、番茄、洋葱。"],
-   tip:"肉饼不要反复翻动，一面煎出焦壳再翻。"},
-  {name:"苹果派",nameEn:"Apple Pie",country:"美国",emoji:"🥧",tastes:["甜"],category:"甜品",difficulty:"中等",time:"90分钟",
-   desc:"酥皮包裹肉桂香苹果，热乎时配冰淇淋最棒。",
-   ing:["派皮 2 张","苹果 4 个","糖 80g","肉桂粉 1 勺","黄油 20g","柠檬汁 少许"],
-   steps:["苹果切块，加糖、肉桂粉、柠檬汁和黄油炒软。","派皮铺入模具，倒入苹果馅。","盖上另一张派皮，划几刀透气。","200℃ 烤 40 分钟至金黄。"],
-   tip:"出炉后放凉再切，馅料才不容易流。"},
-  // ============ 巴西 ============
-  {name:"巴西烤肉",nameEn:"Brazilian BBQ",country:"巴西",emoji:"🥩",tastes:["咸"],category:"主菜",difficulty:"简单",time:"40分钟",
-   desc:"只用粗盐调味，原汁原味的大块烤肉。",
-   ing:["牛排/牛肉块 500g","粗海盐 适量"],
-   steps:["牛肉切大块，均匀抹上粗海盐。","腌 20 分钟。","炭火或烤箱 200℃ 烤制，两面各 8 分钟。","静置 5 分钟后切片，配烧烤酱。"],
-   tip:"好牛肉只撒盐就足够，突出原味。"},
-  // ============ 英国 ============
-  {name:"英式炸鱼薯条",nameEn:"Fish and Chips",country:"英国",emoji:"🍟",tastes:["咸"],category:"主食",difficulty:"简单",time:"30分钟",
-   desc:"鳕鱼裹啤酒面糊炸至金黄，配粗薯条和塔塔酱。",
-   ing:["鳕鱼 2 块","啤酒 150ml","面粉 100g","土豆 2 个","塔塔酱 适量"],
-   steps:["土豆切粗条，炸至金黄捞出。","面粉加啤酒调成面糊，鱼裹糊。","入 180℃ 油锅炸 5 分钟至金黄酥脆。","撒盐，配柠檬和塔塔酱。"],
-   tip:"啤酒面糊让外衣更蓬松酥脆。"},
-  // ============ 新加坡 ============
-  {name:"海南鸡饭",nameEn:"Hainanese Chicken Rice",country:"新加坡",emoji:"🍗",tastes:["鲜","咸"],category:"主食",difficulty:"中等",time:"90分钟",
-   desc:"皮滑肉嫩的鸡配上鸡油饭，蘸姜蒜酱一绝。",
-   ing:["整鸡 1 只","大米 2 杯","姜、蒜、香葱 适量","鸡油 适量","黄瓜 适量"],
-   steps:["鸡入沸水小火浸煮 40 分钟，捞出冰水浸泡。","用鸡油炒香姜蒜，下大米炒匀。","倒入煮鸡的汤焖成鸡油饭。","鸡斩件，配饭、黄瓜和姜蒜蘸酱。"],
-   tip:"鸡煮好后过冰水，皮才爽滑紧致。"}
-];
-
-const TASTE_COLORS = {
-  "酸":{bg:"#e6f4ea",fg:"#1e8e3e",icon:"🍋"},
-  "甜":{bg:"#fde7f0",fg:"#c2185b",icon:"🍬"},
-  "苦":{bg:"#f3ece4",fg:"#6d4c2f",icon:"☕"},
-  "辣":{bg:"#fdecea",fg:"#d93025",icon:"🌶️"},
-  "咸":{bg:"#e8f0fe",fg:"#1a73e8",icon:"🧂"},
-  "鲜":{bg:"#fef3e0",fg:"#e8710a",icon:"🦐"}
-};
-
-const CAT_ICONS = {主菜:"🍽️",主食:"🍚",小吃:"🥟",甜品:"🍰",汤羹:"🥣",沙拉:"🥗",饮品:"🍹"};
-
-const countries = [...new Set(DISHES.map(d=>d.country))];
-const tastes = Object.keys(TASTE_COLORS);
-const cats = [...new Set(DISHES.map(d=>d.category))];
-
-const state = {search:"", countries:new Set(), tastes:new Set(), cats:new Set()};
-
-const $ = id => document.getElementById(id);
-const grid = $("grid"), empty = $("empty");
-
-function tasteBadge(t){
-  const c = TASTE_COLORS[t] || {bg:"#eee",fg:"#555",icon:""};
-  return `<span class="taste" style="background:${c.bg};color:${c.fg}">${c.icon} ${t}</span>`;
-}
-
-function buildChips(){
-  $("countryChips").innerHTML = countries.map(c =>
-    `<button class="chip" data-c="${c}">${c}</button>`).join("");
-  $("tasteChips").innerHTML = tastes.map(t =>
-    `<button class="chip" data-t="${t}">${TASTE_COLORS[t].icon} ${t}</button>`).join("");
-  $("catChips").innerHTML = cats.map(c =>
-    `<button class="chip" data-cat="${c}">${CAT_ICONS[c]||""} ${c}</button>`).join("");
-}
-
-function matches(d){
-  if(state.search){
-    const q = state.search.toLowerCase();
-    const hay = [d.name,d.nameEn,d.country,d.desc,d.ing.join(""),d.category].join(" ").toLowerCase();
-    if(!hay.includes(q)) return false;
-  }
-  if(state.countries.size && !state.countries.has(d.country)) return false;
-  if(state.tastes.size && !d.tastes.some(t=>state.tastes.has(t))) return false;
-  if(state.cats.size && !state.cats.has(d.category)) return false;
-  return true;
-}
-
-function render(){
-  const list = DISHES.filter(matches);
-  $("totalCount").textContent = `共收录 ${DISHES.length} 道美食`;
-  $("resultInfo").innerHTML = `找到 <b>${list.length}</b> 道菜`;
-
-  grid.innerHTML = list.map(d=>`
-    <article class="card" onclick="openDish(${DISHES.indexOf(d)})">
-      <div class="thumb"><span>${d.emoji}</span><span class="country">${d.country}</span></div>
-      <div class="body">
-        <div class="name">${d.name}</div>
-        <div class="nameEn">${d.nameEn}</div>
-        <div class="tags">${d.tastes.map(tasteBadge).join("")}</div>
-        <div class="meta"><span>${CAT_ICONS[d.category]||""} ${d.category}</span><span>⏱ ${d.time}</span><span>🔥 ${d.difficulty}</span></div>
-        <div class="desc">${d.desc}</div>
-        <div class="more">查看做法 →</div>
+<!-- ============ 应用主体 ============ -->
+<div id="app" class="hidden">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="logo" onclick="showView('home')">🍜 环球美食</div>
+      <nav class="navtabs" id="navtabs">
+        <button class="navtab" data-view="home" onclick="showView('home')">美食</button>
+        <button class="navtab" data-view="photos" onclick="showView('photos')">晒照片</button>
+        <button class="navtab" data-view="videos" onclick="showView('videos')">视频教学</button>
+        <button class="navtab" data-view="forum" onclick="showView('forum')">讨论区</button>
+        <button class="navtab" data-view="upload" onclick="showView('upload')">＋上传</button>
+        <button class="navtab admin-only" data-view="admin" onclick="showView('admin')" style="display:none">后台</button>
+      </nav>
+      <div class="auth-area">
+        <button id="authBtn" class="btn btn-outline" onclick="openAuth()">登录 / 注册</button>
+        <div id="userBox" class="userbox hidden">
+          <span id="userName" class="uname"></span>
+          <span id="adminBadge" class="badge hidden">管理员</span>
+          <button class="btn btn-ghost-sm" onclick="logout()">退出</button>
+        </div>
       </div>
-    </article>`).join("");
+    </div>
+  </header>
 
-  empty.style.display = list.length ? "none" : "block";
-  syncChips();
-}
+  <main class="container">
 
-function syncChips(){
-  document.querySelectorAll(".chip").forEach(ch=>{
-    ch.classList.toggle("on",
-      (ch.dataset.c && state.countries.has(ch.dataset.c)) ||
-      (ch.dataset.t && state.tastes.has(ch.dataset.t)) ||
-      (ch.dataset.cat && state.cats.has(ch.dataset.cat)));
-  });
-  $("clearBtn").style.display = state.search ? "block" : "none";
-}
-
-function openDish(idx){
-  const d = DISHES[idx];
-  $("modal").innerHTML = `
-    <div class="m-thumb"><span>${d.emoji}</span><button class="close" onclick="closeDish()">×</button></div>
-    <div class="m-body">
-      <h2>${d.name}</h2>
-      <div class="m-sub">${d.nameEn} · ${d.country}</div>
-      <div class="m-tags">${d.tastes.map(tasteBadge).join("")}
-        <span class="taste" style="background:#f1ede8;color:#7a6f66">${CAT_ICONS[d.category]||""} ${d.category}</span>
+    <!-- ============ 美食浏览 ============ -->
+    <section id="view-home" class="view">
+      <div class="hero-bar">
+        <h2>今天想吃点什么？</h2>
+        <p>按国家 → 地区 → 口味，快速找到你想做的菜</p>
       </div>
-      <p class="m-desc">${d.desc}</p>
-      <div class="m-meta"><span>⏱ ${d.time}</span><span>🔥 难度：${d.difficulty}</span></div>
-      <h4>所需食材</h4>
-      <ul class="ing">${d.ing.map(i=>`<li>${i}</li>`).join("")}</ul>
-      <h4>做法步骤</h4>
-      <ol class="steps">${d.steps.map(s=>`<li>${s}</li>`).join("")}</ol>
-      <div class="m-tip">💡 ${d.tip}</div>
-    </div>`;
-  $("overlay").classList.add("show");
-  document.body.style.overflow = "hidden";
-}
-function closeDish(){
-  $("overlay").classList.remove("show");
-  document.body.style.overflow = "";
-}
+      <div class="searchbar">
+        <div class="sbox">
+          <input id="searchInput" type="text" placeholder="搜索菜名、食材、国家… 如「豆腐」「川菜」「鸡蛋」">
+          <button class="s-clear" id="sClear" onclick="clearSearch()">×</button>
+        </div>
+        <button class="btn btn-ghost" onclick="randomFood()">🎲 随机</button>
+      </div>
 
-$("overlay").addEventListener("click",e=>{ if(e.target===$("overlay")) closeDish(); });
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDish(); });
+      <div class="filter-groups">
+        <div class="fgroup">
+          <span class="flabel">国家</span>
+          <div class="chips" id="countryChips"></div>
+        </div>
+        <div class="fgroup" id="regionGroup" style="display:none">
+          <span class="flabel">地区</span>
+          <div class="chips" id="regionChips"></div>
+        </div>
+        <div class="fgroup">
+          <span class="flabel">口味</span>
+          <div class="chips" id="tasteChips"></div>
+        </div>
+        <div class="fgroup">
+          <span class="flabel">类型</span>
+          <div class="chips" id="catChips"></div>
+        </div>
+      </div>
 
-$("search").addEventListener("input",e=>{ state.search = e.target.value.trim(); render(); });
-$("clearBtn").addEventListener("click",()=>{ $("search").value=""; state.search=""; render(); });
+      <div class="resultbar">
+        <div class="info" id="foodCount"></div>
+        <button class="btn-reset" onclick="resetFilters()">清空全部筛选</button>
+      </div>
 
-function bindChip(id, set, key){
-  $(id).addEventListener("click",e=>{
-    const ch = e.target.closest(".chip"); if(!ch) return;
-    const v = ch.dataset[key];
-    set.has(v) ? set.delete(v) : set.add(v);
-    render();
-  });
-}
-bindChip("countryChips", state.countries, "c");
-bindChip("tasteChips", state.tastes, "t");
-bindChip("catChips", state.cats, "cat");
+      <div class="grid" id="foodGrid"></div>
+      <div class="empty" id="foodEmpty" style="display:none">
+        <div class="emoji">🔍</div>
+        <h3>没有找到匹配的美食</h3>
+        <p>换个关键词或清空筛选试试</p>
+      </div>
+    </section>
 
-$("resetBtn").addEventListener("click",()=>{
-  state.search=""; state.countries.clear(); state.tastes.clear(); state.cats.clear();
-  $("search").value="";
-  render();
-});
+    <!-- ============ 上传美食 ============ -->
+    <section id="view-upload" class="view">
+      <div class="hero-bar"><h2>上传一道美食</h2><p>分享你拿手或吃过的美味，附上做法让大家也能学会</p></div>
+      <div class="card form-card" id="uploadLoginTip">
+        <p style="text-align:center;padding:30px">🔒 请先 <a href="#" onclick="openAuth();return false">登录</a> 后再上传美食</p>
+      </div>
+      <form id="uploadForm" class="card form-card hidden" onsubmit="submitFood(event)">
+        <div class="form-row two">
+          <label>菜名 *<input name="name" required placeholder="如：红烧肉"></label>
+          <label>英文名（可选）<input name="name_en" placeholder="Braised Pork"></label>
+        </div>
+        <div class="form-row two">
+          <label>国家 *<select name="country" required></select></label>
+          <label>地区 / 菜系<select name="region"><option value="">（无）</option></select></label>
+        </div>
+        <div class="form-row two">
+          <label>口味（可多选）<div class="taste-pick" id="tastePick"></div></label>
+          <label>类型<select name="category">
+            <option>主菜</option><option>主食</option><option>小吃</option>
+            <option>甜品</option><option>汤羹</option><option>沙拉</option><option>饮品</option>
+          </select></label>
+        </div>
+        <div class="form-row two">
+          <label>emoji 图标<input name="emoji" value="🍽️" maxlength="4" placeholder="🍽️"></label>
+          <label>难度<select name="difficulty"><option>简单</option><option>中等</option><option>难</option></select>
+          <label style="margin-top:10px">耗时<input name="time" value="30分钟" placeholder="30分钟"></label></label>
+        </div>
+        <label>一句话介绍<textarea name="desc" rows="2" placeholder="这道菜的特点…"></textarea></label>
+        <label>食材（每行一样）<textarea name="ingredients" rows="4" required placeholder="五花肉 500g&#10;冰糖 30g&#10;生抽 3 勺"></textarea></label>
+        <label>做法步骤（每行一步）<textarea name="steps" rows="5" required placeholder="1. 切块焯水&#10;2. 炒糖色…"></textarea></label>
+        <label>小贴士（可选）<textarea name="tip" rows="2"></textarea></label>
+        <label>封面图（可选）<input type="file" name="cover" accept="image/*"></label>
+        <button class="btn btn-primary btn-block" type="submit">发布美食</button>
+      </form>
+    </section>
 
-$("randomBtn").addEventListener("click",()=>{
-  const list = DISHES.filter(matches);
-  if(!list.length) return;
-  openDish(DISHES.indexOf(list[Math.floor(Math.random()*list.length)]));
-});
+    <!-- ============ 晒照片 ============ -->
+    <section id="view-photos" class="view">
+      <div class="hero-bar"><h2>晒食物照片</h2><p>分享你今天做的、吃到的美味瞬间</p></div>
+      <form id="photoForm" class="card photo-upload hidden" onsubmit="submitPhoto(event)">
+        <input type="file" id="photoFile" accept="image/*" required>
+        <input type="text" id="photoCaption" placeholder="写句话（可选）…">
+        <button class="btn btn-primary" type="submit">上传照片</button>
+      </form>
+      <div class="photo-feed" id="photoFeed"></div>
+      <div class="empty" id="photoEmpty" style="display:none"><div class="emoji">📷</div><h3>还没有照片</h3><p>登录后上传第一张美食照片吧</p></div>
+    </section>
 
-buildChips();
-render();
-</script>
+    <!-- ============ 视频教学 ============ -->
+    <section id="view-videos" class="view">
+      <div class="hero-bar"><h2>视频教学</h2><p>看视频学做菜，也能自己上传教学视频</p></div>
+      <button class="btn btn-primary" id="addVideoBtn" onclick="openVideoForm()" style="margin-bottom:16px">＋ 添加视频</button>
+      <form id="videoForm" class="card form-card hidden" onsubmit="submitVideo(event)">
+        <label>标题 *<input name="title" required placeholder="如：麻婆豆腐教程"></label>
+        <label>简介<textarea name="desc" rows="2"></textarea></label>
+        <div class="form-row two">
+          <label>视频链接（B站 / YouTube / mp4 直链）<input name="link" placeholder="https://…"></label>
+          <label>或上传视频文件<input type="file" name="file" accept="video/*"></label>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">发布视频</button>
+      </form>
+      <div class="video-grid" id="videoFeed"></div>
+      <div class="empty" id="videoEmpty" style="display:none"><div class="emoji">🎥</div><h3>还没有视频</h3><p>快来上传第一个教学视频吧</p></div>
+    </section>
+
+    <!-- ============ 讨论区 ============ -->
+    <section id="view-forum" class="view">
+      <div class="hero-bar"><h2>讨论区</h2><p>关于美食，大家一起聊</p></div>
+      <button class="btn btn-primary" onclick="openNewPost()" style="margin-bottom:16px">＋ 发新帖子</button>
+      <div class="forum-list" id="forumList"></div>
+      <div class="empty" id="forumEmpty" style="display:none"><div class="emoji">💬</div><h3>还没有帖子</h3><p>发第一个帖子，开启讨论吧</p></div>
+    </section>
+
+    <!-- ============ 后台管理 ============ -->
+    <section id="view-admin" class="view">
+      <div class="hero-bar"><h2>管理员后台</h2><p>管理全站内容与用户</p></div>
+      <div class="chips admin-tabs" id="adminTabs">
+        <button class="chip on" data-atab="foods">美食</button>
+        <button class="chip" data-atab="photos">照片</button>
+        <button class="chip" data-atab="videos">视频</button>
+        <button class="chip" data-atab="discussions">帖子</button>
+        <button class="chip" data-atab="users">用户</button>
+      </div>
+      <div id="adminContent" class="admin-content"></div>
+    </section>
+
+  </main>
+
+  <footer class="footer">环球美食 · 由 Supabase 驱动 · 数据仅供家常参考</footer>
+</div>
+
+<!-- ============ 登录弹窗 ============ -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal auth-modal">
+    <button class="modal-close" onclick="closeAuth()">×</button>
+    <h3 id="authTitle">登录</h3>
+    <div class="auth-switch">
+      <button id="tabLogin" class="on" onclick="switchAuth('login')">登录</button>
+      <button id="tabRegister" onclick="switchAuth('register')">注册</button>
+    </div>
+    <form onsubmit="submitAuth(event)">
+      <label id="usernameField" style="display:none">昵称<input id="authUsername" placeholder="你的昵称"></label>
+      <label>邮箱<input id="authEmail" type="email" required placeholder="you@example.com"></label>
+      <label>密码<input id="authPassword" type="password" required placeholder="至少 6 位" minlength="6"></label>
+      <div class="auth-error" id="authError"></div>
+      <button class="btn btn-primary btn-block" type="submit" id="authSubmit">登录</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ 美食详情弹窗 ============ -->
+<div class="modal-overlay" id="foodModal">
+  <div class="modal food-modal">
+    <div class="fm-thumb" id="fmThumb"></div>
+    <button class="modal-close" onclick="closeFood()">×</button>
+    <div class="fm-body" id="fmBody"></div>
+  </div>
+</div>
+
+<!-- ============ 帖子详情弹窗 ============ -->
+<div class="modal-overlay" id="threadModal">
+  <div class="modal thread-modal">
+    <button class="modal-close" onclick="closeThread()">×</button>
+    <div id="threadBody"></div>
+  </div>
+</div>
+
+<script src="supabase.min.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
